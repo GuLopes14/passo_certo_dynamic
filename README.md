@@ -165,7 +165,7 @@ O "Atual" é simulado com tempos constantes apenas porque o relato traz um únic
 
 Na fase de pedestres, um pedestre vulnerável atendido no segundo `e` do verde termina a tempo se `e + largura / velocidade <= verde + limpeza`, com velocidade de 0,9 m/s. A limpeza é o vermelho piscante: 7 s no "Atual" e 3 s (o tempo perdido) nos outros semáforos.
 
-## Resultados (média de 30 cenários, sementes 1 a 30)
+## Resultados (média de 30 cenários, seeds 1 a 30)
 
 Valores copiados da saída de `python main.py --relatorio`, que é o mesmo resultado da opção 2 do menu.
 
