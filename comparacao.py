@@ -26,10 +26,10 @@ FRACAO_CICLO_ANTERIOR = 0.5     # peso das chegadas do ciclo anterior na previs�
 ORDEM_EXECUCAO = (PEDESTRES, PRINCIPAL, TRANSVERSAL)
 
 # Verdes na ordem: via principal, pedestres, via transversal.
-# Relato de quem atravessa: 12 s de verde + 7 s de vermelho piscante.
+# Relato de quem atravessa: cerca de 14 s de verde + 5 s de vermelho piscante.
 # Os 37 s e 28 s dos carros são supostos, pois o relato só fala do pedestre.
-VERDES_ATUAL = (37, 12, 28)
-LIMPEZA_ATUAL = 7
+VERDES_ATUAL = (37, 14, 28)
+LIMPEZA_ATUAL = 5
 
 VERDES_PADRAO = (36, 17, 28)
 VERDES_IGUALITARIO = (27, 27, 27)
@@ -92,7 +92,7 @@ def simular(cenario, semaforo, ordem=ORDEM_EXECUCAO):
             demanda.append(len(filas[i]) + FRACAO_CICLO_ANTERIOR * chegadas_ciclo[i])
 
         if semaforo["verdes"] is None:
-            verdes = alocar_cache(quantizar(demanda))["verdes"]
+            verdes = alocar_cache(quantizar(demanda))
         else:
             verdes = semaforo["verdes"]
 

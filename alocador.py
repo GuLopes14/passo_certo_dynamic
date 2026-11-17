@@ -213,6 +213,9 @@ def quantizar(demandas):
 
 
 # Técnica 3: guarda a resposta de cada estado de tráfego já calculado.
+# Devolve só os verdes, como tupla. O cache entrega o mesmo objeto a todos que
+# pedem o mesmo estado; como uma tupla não pode ser alterada, ninguém consegue
+# corromper uma resposta guardada.
 @lru_cache(maxsize=4096)
 def alocar_cache(estado):
-    return alocar_tabulacao(estado)
+    return tuple(alocar_tabulacao(estado)["verdes"])

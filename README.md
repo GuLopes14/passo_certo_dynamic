@@ -26,13 +26,13 @@ Divisão do tempo de verde de um semáforo com Programação Dinâmica, pensada 
 
 ## Escuta do território
 
-O ponto de partida é o relato de quem atravessa o cruzamento: o sinal de pedestres fica **12 s em verde** e depois **7 s em vermelho piscante**, em uma travessia de **12,3 m** de largura.
+O ponto de partida é o relato de quem atravessa o cruzamento: o sinal de pedestres fica cerca de **14 s em verde** e depois cerca de **5 s em vermelho piscante**, em uma travessia de **12,3 m** de largura. Os tempos usados no código são exatamente os do relato.
 
 > "Eu trabalho no conjunto nacional e todos os dias pego o metrô da consolação, portanto sempre passo por este cruzamento, acredito que o tempo que fico esperando é cerca de 20 ou 19 segundos, levando em conta que o semáforo fica aberto uns 14 segundos e o piscante fica uns 5 segundos."
 >
-> Doutora de uma clínica odontológica chamda LLanos, localizada no conjunto nacional.
+> Profissional de saúde que trabalha no Conjunto Nacional.
 
-O relato cobre apenas o tempo do pedestre. O tipo de controle do semáforo atual não foi confirmado.
+O relato cobre apenas o tempo do pedestre e é uma estimativa de quem atravessa, não uma medição. O tipo de controle do semáforo atual não foi confirmado. Para seguir a regra de cuidado com os dados, a entrevistada não é identificada.
 
 ## A conta simples
 
@@ -40,7 +40,7 @@ Para um pedestre vulnerável, a 0,9 m/s:
 
 - Atravessar 12,3 m leva 13,67 s.
 - Arredondando para 14 s e somando 3 s de reação, são necessários **17 s**.
-- O relato indica **19 s** disponíveis (12 s + 7 s), uma **folga de 2 s**.
+- O relato indica **19 s** disponíveis (14 s + 5 s), uma **folga de 2 s**.
 - Para terminar a tempo, a pessoa precisa começar nos primeiros **5 s** do verde (mais exatamente, até 5,33 s).
 
 Portanto, 19 s cobrem quem começa logo. **O problema estudado aqui é a capacidade no pico**: a quantidade de pessoas que consegue iniciar a travessia em cada ciclo quando a estação despeja uma multidão.
@@ -87,12 +87,12 @@ Divisão             Verdes (Ped/Princ/Transv)   Pedestres  Carros   Total
 Passo Certo (DP)    45/20/16                           90      28     118
 Fixo igualitário    27/27/27                           54      29      83
 Fixo padrão         17/36/28                           34      29      63
-Atual (relatado)    12/37/28                           24      29      53
+Atual (relatado)    14/37/28                           28      29      57
 Os 37 s e 28 s dos carros no "Atual" são supostos; o relato só cobre o pedestre.
 
 Neste ciclo                           Atual (relatado)     Passo Certo
 ----------------------------------------------------------------------
-Verde de pedestres                 12 s + 7 s piscante      45 s + 3 s
+Verde de pedestres                 14 s + 5 s piscante      45 s + 3 s
 Vulnerável termina se começar até                5,3 s          34,3 s
 
 QUANTO TRABALHO FOI PRECISO PARA ACHAR A MELHOR DIVISÃO
@@ -135,8 +135,8 @@ O benefício de uma fase é `peso * min(demanda, taxa * segundos) - EPS * segund
 | Carros via transversal | 0,5 | 10 | 60 | 1,0 | 28 |
 
 1. **Tabulação (`alocar_tabulacao`).** Abordagem bottom-up. `dp[i][t]` é o melhor benefício das `i` primeiras fases com no máximo `t` segundos, e uma tabela de escolhas permite reconstruir a resposta. A complexidade é O(n·T·K), com `n` fases, capacidade `T` e `K` opções por fase.
-2. **Memoização (`alocar_memoizacao`).** Abordagem top-down com a mesma recorrência, escrita como recursão com `lru_cache` sobre `(fase, tempo)`. Chega ao mesmo benefício da tabulação, o que é conferido a cada leitura no modo interativo.
-3. **Cache de estados (`quantizar` + `alocar_cache`).** As demandas são arredondadas para múltiplos de 4 e a resposta de cada estado de tráfego fica guardada em um `lru_cache`, o que evita recalcular situações já vistas durante a simulação.
+2. **Memoização (`alocar_memoizacao`).** Abordagem top-down com a mesma recorrência, escrita como recursão com `lru_cache` sobre `(fase, tempo)`. Chega ao mesmo benefício da tabulação, o que é conferido a cada leitura no modo interativo. Costuma ser mais rápida porque a recursão só resolve os subproblemas `(fase, tempo)` que a resposta final realmente usa: são 152 estados alcançáveis, enquanto a tabulação percorre a tabela inteira, todos os tempos de 0 a 81 s em todas as fases (4.621 transições).
+3. **Cache de estados (`quantizar` + `alocar_cache`).** As demandas são arredondadas para múltiplos de 4 e a resposta de cada estado de tráfego fica guardada em um `lru_cache`, o que evita recalcular situações já vistas durante a simulação. O cache devolve os verdes como tupla: como o mesmo objeto é entregue a todos que pedem o mesmo estado, uma tupla, que não pode ser alterada, impede que alguém corrompa uma resposta guardada.
 
 Uma força bruta (`alocar_forca_bruta`) testa todas as combinações válidas. Ela não decide o semáforo: serve para confirmar que a Programação Dinâmica encontrou o ótimo e para medir o trabalho economizado.
 
@@ -156,22 +156,22 @@ A otimização não gasta verde que não aumenta o benefício. Os segundos que s
 
 | Semáforo | Verdes (principal / pedestres / transversal) | Observação |
 |---|---|---|
-| Atual (relatado) | 37 / 12 / 28, mais 7 s de piscante para pedestres | Os 12 s + 7 s vêm do relato. Os 37 s e 28 s dos carros são **supostos**, pois o relato só informa o pedestre, e foram escolhidos para o ciclo fechar em 90 s |
+| Atual (relatado) | 37 / 14 / 28, mais 5 s de piscante para pedestres | Os 14 s + 5 s vêm do relato. Os 37 s e 28 s dos carros são **supostos**, pois o relato só informa o pedestre, e foram escolhidos para o ciclo fechar em 90 s |
 | Fixo padrão | 36 / 17 / 28 | Plano constante, com o pedestre no mínimo calculado |
 | Fixo igualitário | 27 / 27 / 27 | Divide o verde em partes iguais |
 | Adaptativo (DP) | Calculado a cada ciclo | Usa como demanda a fila atual mais 50% das chegadas do ciclo anterior, quantiza e chama `alocar_cache` |
 
 O "Atual" é simulado com tempos constantes apenas porque o relato traz um único valor, o que não diz nada sobre como o semáforo real é controlado.
 
-Na fase de pedestres, um pedestre vulnerável atendido no segundo `e` do verde termina a tempo se `e + largura / velocidade <= verde + limpeza`, com velocidade de 0,9 m/s. A limpeza é o vermelho piscante: 7 s no "Atual" e 3 s (o tempo perdido) nos outros semáforos.
+Na fase de pedestres, um pedestre vulnerável atendido no segundo `e` do verde termina a tempo se `e + largura / velocidade <= verde + limpeza`, com velocidade de 0,9 m/s. A limpeza é o vermelho piscante: 5 s no "Atual" e 3 s (o tempo perdido) nos outros semáforos.
 
-## Resultados (média de 30 cenários, seeds 1 a 30)
+## Resultados (média de 30 cenários, sementes 1 a 30)
 
 Valores copiados da saída de `python main.py --relatorio`, que é o mesmo resultado da opção 2 do menu.
 
 | Semáforo | Espera pedestres | Espera carros | Vulneráveis a tempo | Pico da fila (pessoas) |
 |---|---|---|---|---|
-| Atual (relatado) | 9 min 46 s | 23 s | 49% | 418 |
+| Atual (relatado) | 6 min 26 s | 23 s | 42% | 270 |
 | Fixo padrão | 2 min 3 s | 24 s | 42% | 99 |
 | Fixo igualitário | 51 s | 30 s | 69% | 91 |
 | Passo Certo (DP) | 42 s | 32 s | 79% | 91 |
@@ -181,13 +181,13 @@ Valores copiados da saída de `python main.py --relatorio`, que é o mesmo resul
 ### Leitura honesta
 
 - **Os números vêm de dados simulados e não calibrados.** Eles servem para comparar estratégias no mesmo cenário, não para prever o cruzamento real.
-- **O "Atual" está saturado.** Neste modelo, a fila cresce a hora inteira. Os valores absolutos dessa linha, como a espera de 9 min 46 s, não são previsão.
+- **O "Atual" está saturado.** Neste modelo, a fila cresce a hora inteira. Os valores absolutos dessa linha, como a espera de 6 min 26 s, não são previsão.
 - **O ganho vem de estender o verde de pedestres no pico, até 45 s, e não do mínimo de 17 s.** O "Fixo padrão" já usa 17 s e tem espera média de 2 min 3 s, contra 42 s do Passo Certo.
 - **Os carros pagam a conta.** A espera deles é a maior entre os semáforos: 32 s no Passo Certo, 8 s a mais que no "Fixo padrão".
 - **O "Fixo igualitário" é um concorrente forte e mais simples.** Ele fica em 51 s de espera de pedestres e 30 s de carros, sem nenhuma câmera. O Passo Certo fica à frente na espera de pedestres (42 s) e nos vulneráveis que terminam a tempo (79% contra 69%), com carros em 32 s.
 - **A vantagem depende de picos fortes.** Com trens mais frequentes e o mesmo volume de pessoas, as rajadas diminuem e a vantagem sobre o "Fixo igualitário" tende a encolher.
 - **Os números são sensíveis ao momento em que a multidão chega.** Pequenas mudanças nesse instante alteram em que parte do ciclo ela encontra o semáforo.
-- **Mais verde mínimo não melhora, sozinho, a travessia a tempo.** O "Atual" (49%) supera o "Fixo padrão" (42%), porque seus 7 s de piscante protegem melhor quem inicia a travessia nos últimos segundos. O indicador melhora no Passo Certo (79%), mas continua abaixo de 100%: quem começa no fim de um verde longo pode não terminar a tempo.
+- **Mais verde mínimo não melhora, sozinho, a travessia a tempo.** O "Fixo padrão" dá 3 s a mais de verde que o "Atual", mas os dois ficam empatados em 42%: os 5 s de piscante do "Atual", contra 3 s, protegem quem inicia a travessia nos últimos segundos. O indicador melhora no Passo Certo (79%), mas continua abaixo de 100%: quem começa no fim de um verde longo pode não terminar a tempo.
 - **O Passo Certo não reduz o pico da fila em relação ao "Fixo igualitário"** (91 pessoas nos dois). Ele reage depois que a rajada aparece, e o ciclo em que ela começa ainda foi planejado sem ela.
 
 ### Ordem das fases
@@ -209,6 +209,7 @@ Todas as premissas a seguir são constantes nomeadas e comentadas no código, e 
 - Da plataforma até a rua são cerca de 5 min, porque a estação é funda. A primeira multidão chega à rua aos 120 s da simulação, e cada chegada decai exponencialmente com constante de 40 s.
 - Cada pedestre é vulnerável com probabilidade de 12%.
 - Velocidade de 0,9 m/s para o pedestre vulnerável e atendimento de 2 pedestres por segundo.
+- O verde mínimo de 17 s inclui 3 s de reação, mas a simulação não aplica esse tempo ao verificar quem termina a tempo: considera que o pedestre começa a atravessar no segundo em que é atendido. Descontar a reação tenderia a reduzir o percentual de vulneráveis a tempo em todos os semáforos.
 - Os pesos, os limites de verde e os tempos dos carros no "Atual" são escolhas do modelo.
 
 Limitações:
